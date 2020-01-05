@@ -1,13 +1,31 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // BUDGET CONTROLLER //
-window.onload = function(){ // added this fn so quokka won't return error: 
-// "Cannot read property 'addEventListener' of null", on the btn 
 const budgetController = (() => {
 	
+	var Expense = function(id, description, value) {
+		this.id = id;
+		this.description = description;
+		this.value = value;
+	}
 
-
-
-
+	var Income = function(id, description, value) {
+		this.id = id;
+		this.description = description;
+		this.value = value;
+	}
+	var data = {
+		allItems: {
+			exp: [],
+			inc: []
+		},
+		totals: {
+			exp: 0,
+			inc: 0
+		}
+	}
+	
+	var totalExpenses = 0;
+	var totalIncomes = 0;
 	
 })();
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -47,17 +65,18 @@ var controller = (function(budgetCtrl, UICtrl){
 	
 	var setupEventListeners = function(){ // putting all eventListeners on one fn
 		
-		var DOM = UICtrl.getDOMstrings();
-	
-		document.querySelector(DOM.inputBtn).addEventListener('click', ctrlAddItem);
+			var DOM = UICtrl.getDOMstrings();
+			window.onload = function(){ // added this fn so quokka won't return error: 
+			// "Cannot read property 'addEventListener' of null", on the btn 	
+			document.querySelector(DOM.inputBtn).addEventListener('click', ctrlAddItem);
 
-		document.addEventListener('keypress', function(e){
-			if(e.keyCode === 13 || e.charCode === 13){
-				ctrlAddItem();
-			}
-		}) ; 
-	};
-
+			document.addEventListener('keypress', function(e){
+				if(e.keyCode === 13 || e.charCode === 13){
+					ctrlAddItem();
+				}
+			}) ; 
+		};
+	}
 	var ctrlAddItem = function(){
 			// 1. Get the field input data
 		var input = UICtrl.getInput();
@@ -85,5 +104,3 @@ var controller = (function(budgetCtrl, UICtrl){
 
 // without this line nothing runs, no eventListeners
 controller.init();
-
-} // window.onload fn end
