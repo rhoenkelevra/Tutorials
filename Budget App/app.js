@@ -1,6 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // BUDGET CONTROLLER //
- //this function is to avoid errors on eventListeners
 
 const budgetController = (() => {
 	
@@ -148,9 +147,24 @@ const UIController = (() => {
 		percentageLabel:'.budget__expenses--percentage',
 		container: '.container',
 		expensesPercLabel: '.item__percentage',
-
-
+		dateLabel: '.budget__title--month',
 	}
+
+	var formatNumber = function(num, type){
+		var numSplit, int, dec
+		// + or - before formatNumber, exactly 2 decimal points, comma separating the thousands
+
+		num = Math.abs(num);
+		num = num.toFixed(2); // transform the num to a string with 2 decimal points
+
+		numSplit = num.split('.');
+		int = numSplit[0];
+		if(int.length > 3){
+			int = int.substr(0, int.length - 3) + ',' + int.substr(int.length -3, 3)
+		}
+		dec = numSplit[1];
+		return (type === 'exp'? '-':'+') + ' ' + int + '.' + dec;
+	};
 
 	return{
 		// Public method to get user input and make it globally available
@@ -164,7 +178,7 @@ const UIController = (() => {
 
 		addListItem: function(obj, type){
 			var html, newHTML, element;
-			// Create HTML string with placeholder textAlign: 
+			// Create HTML string with placeholder text: 
 			if(type === 'inc'){
 			element = DOMStrings.incomeContainer;
 			html = '<div class="item clearfix" id="inc-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
@@ -175,7 +189,7 @@ const UIController = (() => {
 			// Replace the placeholder text with some actual data
 			newHTML = html.replace('%id%', obj.id);
 			newHTML = newHTML.replace('%description%', obj.description);
-			newHTML = newHTML.replace('%value%', obj.value);
+			newHTML = newHTML.replace('%value%', formatNumber(obj.value, type));
 
 			// Insert the HTML to the DOM
 			document.querySelector(element).insertAdjacentHTML('beforebegin', newHTML)
@@ -204,15 +218,21 @@ const UIController = (() => {
 			fieldsArr[0].focus();
 		},
 		displayBudget: function(obj){
-			document.querySelector(DOMStrings.budgetLabel).textContent = obj.budget;
-			document.querySelector(DOMStrings.incomeLabel).textContent = obj.totalInc;
-			document.querySelector(DOMStrings.expensesLabel).textContent = obj.totalExp;
+			var type;
+			obj.budget > 0? type = 'inc': type = 'exp';
+
+			window.addEventListener('DOMContentLoaded', function(){ // this fn fix the .textContent null error
+				document.querySelector(DOMStrings.budgetLabel).textContent = formatNumber(obj.budget, type);
+				document.querySelector(DOMStrings.incomeLabel).textContent = formatNumber(obj.totalInc, 'inc');
+				document.querySelector(DOMStrings.expensesLabel).textContent = formatNumber(obj.totalExp, 'exp');
+				if(obj.percentage > 0){
+					document.querySelector(DOMStrings.percentageLabel).textContent = obj.percentage + '%';
+				}else {
+					document.querySelector(DOMStrings.percentageLabel).textContent = '---';
+				}
+			});
+	
 			
-			if(obj.percentage > 0){
-				document.querySelector(DOMStrings.percentageLabel).textContent = obj.percentage + '%';
-			}else {
-				document.querySelector(DOMStrings.percentageLabel).textContent = '---';
-			}
 		},
 		displayPercentages: function(percentages){
 			var fields;
@@ -238,9 +258,27 @@ const UIController = (() => {
 			// 	}
 			// });
 		},
-
+		displayMonth: function(){
+			var now, year, month, months;
+			now = new Date();
+			month = now.getMonth();
+			months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+			year = now.getFullYear();
+			window.onload = function(){
+			document.querySelector(DOMStrings.dateLabel).textContent = months[month] + ' ' + year;
+			}
+		},
+		changedType: function(){
+			var fields = document.querySelectorAll(
+				DOMStrings.inputType + ', ' +
+				DOMStrings.inputDescription + ', ' +
+				DOMStrings.inputValue);
+			fields.forEach(function(cur, i){
+				cur.classList.toggle('red-focus');
+			});
+			document.querySelector(DOMStrings.inputBtn).classList.toggle('red');
+		},
 	}
-	
 })()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // GLOBAL APP CONTROLLER //
@@ -250,16 +288,19 @@ var controller = (function(budgetCtrl, UICtrl){
 	var setupEventListeners = function(){ // putting all eventListeners on one fn
 		
 			var DOM = UICtrl.getDOMstrings();
-
-			document.querySelector(DOM.inputBtn).addEventListener('click', ctrlAddItem);
-			window.onload = function(){ //
-			document.addEventListener('keypress', function(e){
+			window.onload = function(){
+				document.querySelector(DOM.inputBtn).addEventListener('click', ctrlAddItem);
+			//this fn is to avoid errors on eventListeners, wait for the page to load so it won't return null
+				document.addEventListener('keypress', function(e){
 				if(e.keyCode === 13 || e.charCode === 13){
 					ctrlAddItem();
 				}
 			}); 
-
+			// delete items with X btn
 			document.querySelector(DOM.container).addEventListener('click', ctrlDeleteItem);
+
+			// change input field colors: green for income and red for exp
+			document.querySelector(DOM.inputType).addEventListener('change', UICtrl.changedType);
 	}};
 
 	var updateBudget = function(){
@@ -331,6 +372,7 @@ var controller = (function(budgetCtrl, UICtrl){
 	return{
 		init: function(){
 			console.log('application has started');
+			UIController.displayMonth();
 			UICtrl.displayBudget({
 				budget: 0,
 				totalInc: 0,
