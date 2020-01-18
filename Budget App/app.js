@@ -205,7 +205,7 @@ const UIController = (() => {
 			el = document.getElementById(selectorID);
 			el.parentNode.removeChild(el)
 		},
-
+    
 		clearFields: function(){
 			var fields, fieldsArr;
 			fields = document.querySelectorAll(DOMStrings.inputDescription + ', ' + DOMStrings.inputValue);
