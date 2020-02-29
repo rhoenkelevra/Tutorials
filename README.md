@@ -1,6 +1,6 @@
-### This is a collection of some of the courses, tutorials and follow along tutorials that I have done to improve my skill
+### This is a collection of some of the courses and tutorials that I did to improve my coding skills
 
-### I did not create those projects. 
+### I did not create or claim credit for these projects. 
 
 ## Credits
 
